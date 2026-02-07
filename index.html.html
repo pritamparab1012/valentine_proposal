@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Love Quest: Galaxy Edition</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX support -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes tada {
+            0% { transform: scale(1); }
+            10%, 20% { transform: scale(0.9) rotate(-3deg); }
+            30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+            40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        .animate-tada {
+            animation: tada 1s infinite;
+        }
+        @keyframes pulse-fast {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-pulse-fast {
+            animation: pulse-fast 0.5s infinite;
+        }
+        [data-lucide] {
+            display: inline-block;
+        }
+        .cat-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Improved Icon Component
+        const Icon = ({ name, size = 24, className = "", fill = "none" }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name, size, className]);
+
+            return (
+                <span className={`inline-flex items-center justify-center ${className}`}>
+                    <i
+                        data-lucide={name}
+                        style={{ width: size, height: size, stroke: 'currentColor', fill: fill }}
+                    ></i>
+                </span>
+            );
+        };
+
+        const ProgressBar = ({ percent }) => {
+            return (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 w-64 h-3 bg-slate-700/50 rounded-full border border-purple-500/30 z-50 overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-700 shadow-[0_0_15px_rgba(168,85,247,0.8)]"
+                        style={{ width: `${percent}%` }}
+                    />
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [stage, setStage] = useState('welcome');
+            const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
+            const [isNoButtonMoving, setIsNoButtonMoving] = useState(false);
+            const [quizScore, setQuizScore] = useState(0);
+            const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+            const [compliment, setCompliment] = useState("");
+            const [introStage, setIntroStage] = useState(0);
+            const [clicks, setClicks] = useState(0);
+            const clickTarget = 10;
+            const [finalQuestionIndex, setFinalQuestionIndex] = useState(0);
+
+            const introQuestions = [
+                {
+                    title: "Hey beautiful...",
+                    question: "I've been thinking about us a lot lately. Can I ask you a few things? (P.S. There are hidden cats!)",
+                    yesText: "Meow! (Yes)",
+                    noText: "I'm busy"
+                },
+                {
+                    title: "Cosmic Memories",
+                    question: "Do you remember the first time we realized we were special together?",
+                    yesText: "Yes, I do 💜",
+                    noText: "Not really"
+                }
+            ];
+
+            const compliments = [
+                "Your smile outshines the stars! ✨",
+                "You are the smartest person in the galaxy. 🧠",
+                "Every day with you is a cosmic adventure. 🌎",
+                "You have the kindest heart in the universe. 💜",
+                "I'm obsessed with your laugh! 🎵",
+                "You make everything better just by being there. 🌟",
+                "You're the cat's pajamas! 🐱",
+                "I'm not kitten when I say you're amazing! 🐾"
+            ];
+
+            const quizQuestions = [
+                {
+                    q: "What is my absolute favorite thing about you?",
+                    a: ["Your eyes", "Your personality", "Everything", "Your cooking"],
+                    correct: 2
+                },
+                {
+                    q: "If we were space cats, what would we be doing?",
+                    a: ["Napping on the moon", "Chasing comets", "Cuddling in zero-g", "Eating star-tuna"],
+                    correct: 2
+                },
+                {
+                    q: "Do you like my silly jokes?",
+                    a: ["I love them!", "They are terrible", "I tolerate them", "Sometimes"],
+                    correct: 0
+                },
+                {
+                    q: "Who is the cuter one in our relationship?",
+                    a: ["You are!", "Me (obviously)", "The Cat", "It's a tie"],
+                    correct: 1
+                },
+                {
+                    q: "What is my favorite activity to do with you?",
+                    a: ["Watching movies", "Just talking", "Traveling", "Spending time together"],
+                    correct: 3
+                },
+                {
+                    q: "Do you know how much you mean to me?",
+                    a: ["I have a clue", "Tell me more", "Yes, absolutely", "Maybe"],
+                    correct: 2
+                },
+                {
+                    q: "How much do I love you?",
+                    a: ["To the moon and back", "More than pizza", "Infinity x Infinity", "Yes"],
+                    correct: 3
+                }
+            ];
+
+            const finalQuestions = [
+                {
+                    title: "Almost there...",
+                    question: "You've completed the quest, but are you ready for the final boss level?",
+                    yesText: "I was born ready!",
+                    noText: "I'm scared"
+                },
+                {
+                    title: "One last promise",
+                    question: "Promise to answer the next question with your whole heart?",
+                    yesText: "I promise 💜",
+                    noText: "Maybe"
+                }
+            ];
+
+            const handleNoHover = () => {
+
+                // We use innerWidth and innerHeight specifically
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                // We want to keep the button center within the middle 80% of the screen
+                const horizontalMargin = w * 0.3;
+                const verticalMargin = h * 0.3;
+
+                const minX = horizontalMargin;
+                const maxX = w - horizontalMargin;
+                const minY = verticalMargin;
+                const maxY = h - verticalMargin;
+
+                const safeX = Math.floor(Math.random() * (maxX - minX) + minX);
+                const safeY = Math.floor(Math.random() * (maxY - minY) + minY);
+
+                setNoButtonPos({ x: safeX, y: safeY });
+                setIsNoButtonMoving(true);
+            };
+
+            const handleQuizAnswer = (index) => {
+                if (index === quizQuestions[currentQuizIndex].correct) {
+                    setQuizScore(s => s + 1);
+                }
+                if (currentQuizIndex < quizQuestions.length - 1) {
+                    setCurrentQuizIndex(i => i + 1);
+                } else {
+                    setStage('challenge');
+                }
+            };
+
+            const handleHeartClick = () => {
+                const newClicks = clicks + 1;
+                setClicks(newClicks);
+                if (newClicks >= clickTarget) {
+                     setStage('quiz-result');
+                }
+            };
+
+            const handleFinalNext = () => {
+                if (finalQuestionIndex < finalQuestions.length - 1) {
+                    setFinalQuestionIndex(i => i + 1);
+                    setIsNoButtonMoving(false);
+                } else {
+                    setStage('proposal');
+                    setIsNoButtonMoving(false);
+                }
+            };
+
+            const nextIntro = () => {
+                if (introStage < introQuestions.length - 1) {
+                    setIntroStage(s => s + 1);
+                    setIsNoButtonMoving(false);
+                } else {
+                    setStage('compliments');
+                }
+            };
+
+            const resetQuest = () => {
+                setStage('welcome');
+                setIntroStage(0);
+                setCurrentQuizIndex(0);
+                setQuizScore(0);
+                setClicks(0);
+                setFinalQuestionIndex(0);
+                setIsNoButtonMoving(false);
+                setCompliment("");
+            };
+
+            return (
+                <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black text-white flex items-center justify-center p-4 font-sans overflow-hidden relative">
+
+                    <div className="fixed inset-0 pointer-events-none opacity-40">
+                         {[...Array(20)].map((_, i) => (
+                            <div key={i} className="absolute bg-white rounded-full animate-pulse"
+                                 style={{
+                                     top: `${Math.random() * 100}%`,
+                                     left: `${Math.random() * 100}%`,
+                                     width: `${Math.random() * 3 + 1}px`,
+                                     height: `${Math.random() * 3 + 1}px`,
+                                     animationDuration: `${Math.random() * 3 + 2}s`
+                                 }}>
+                            </div>
+                         ))}
+                    </div>
+
+                    {stage === 'welcome' && (
+                        <div className="text-center space-y-8 animate-in fade-in zoom-in duration-700 relative z-10">
+                            <div className="relative inline-block">
+                                <Icon name="cat" size={100} className="text-purple-400 animate-pulse" fill="rgba(168,85,247,0.5)" />
+                                <div className="absolute -top-4 -right-4 text-yellow-400 animate-bounce">
+                                    <Icon name="moon" size={32} fill="currentColor" />
+                                </div>
+                            </div>
+                            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 tracking-tight drop-shadow-lg">
+                                Cosmic Love Quest
+                            </h1>
+                            <p className="text-xl text-indigo-200 font-medium">Ready for a journey written in the stars?</p>
+                            <button
+                                onClick={() => setStage('intro')}
+                                className="group px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-bold text-xl shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto transition-all"
+                            >
+                                Launch Mission <Icon name="rocket" size={24} className="group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
+                            </button>
+                        </div>
+                    )}
+
+                    {(stage === 'intro' || stage === 'final-questions' || stage === 'proposal') && (
+                        <div className="glass-panel max-w-md w-full p-8 rounded-3xl text-center space-y-6 animate-in slide-in-from-bottom-10 relative z-10">
+                            {stage === 'intro' && (
+                                <>
+                                    <ProgressBar percent={15 + (introStage * 15)} />
+                                    <Icon name="cat" className="mx-auto text-purple-300 cat-float" size={50} />
+                                    <h2 className="text-3xl font-bold text-white">{introQuestions[introStage].title}</h2>
+                                    <p className="text-lg text-indigo-100 leading-relaxed">{introQuestions[introStage].question}</p>
+                                    <div className="flex flex-row gap-4 items-center justify-center pt-4 w-full">
+                                        <button onClick={nextIntro} className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full shadow-lg flex items-center justify-center gap-2">
+                                            <Icon name="star" size={18} fill="white" /> {introQuestions[introStage].yesText}
+                                        </button>
+                                        <div className="flex-1 h-full relative">
+                                        <button
+                                            onMouseEnter={handleNoHover}
+                                            onClick={handleNoHover}
+                                            style={isNoButtonMoving ? { position: 'fixed',
+                                            // Must include `px` and must use the safe coordinates
+                                            left: `${noButtonPos.x}px`,
+                                            top: `${noButtonPos.y}px`,
+                                            width: '150px',
+                                            height: '50px',
+
+                                            zIndex: 9999,
+                                            margin: 0,
+                                            transition: 'all 0.2s ease-out',
+                                            transform: 'translate(-50%, -50%)', // Keeps the center of the button on the coordinate
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                            } : {width: '100%',  height: '100%'}}
+                                            className="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400"
+                                        >
+                                            {introQuestions[introStage].noText}
+                                        </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {stage === 'final-questions' && (
+                                <>
+                                    <ProgressBar percent={95} />
+                                    <Icon name="heart-handshake" className="mx-auto text-pink-400 animate-pulse" size={50} />
+                                    <h2 className="text-3xl font-bold text-white">{finalQuestions[finalQuestionIndex].title}</h2>
+                                    <p className="text-lg text-indigo-100 leading-relaxed">{finalQuestions[finalQuestionIndex].question}</p>
+                                    <div className="flex flex-row gap-4 items-center justify-center pt-4 w-full">
+                                        <button onClick={handleFinalNext} className="flex-1 px-4 py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-full shadow-lg flex items-center justify-center gap-2">
+                                             {finalQuestions[finalQuestionIndex].yesText}
+                                        </button>
+                                        <div className="flex-1 h-full relative">
+                                        <button
+                                            onMouseEnter={handleNoHover}
+                                            onClick={handleNoHover}
+                                            style={isNoButtonMoving ? { position: 'fixed',  width: '180px', height: '64px', left: noButtonPos.x, top: noButtonPos.y, zIndex: 1000, transition: 'all 0.1s ease-out' } : {width: '100%',  height: '100%'}}
+                                            className="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400"
+                                        >
+                                            {finalQuestions[finalQuestionIndex].noText}
+                                        </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {stage === 'proposal' && (
+                                <>
+                                    <ProgressBar percent={100} />
+                                    <div className="space-y-4">
+                                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-200 uppercase drop-shadow-sm">The Ultimate Question</h1>
+                                        <p className="text-xl text-indigo-100 italic">"Will you be my Valentine?"</p>
+                                    </div>
+                                    <div className="flex flex-row items-center justify-center gap-4 pt-6 w-full">
+                                        <button onClick={() => setStage('celebration')} className="flex-1 px-4 py-4 bg-green-500 hover:bg-green-600 text-white font-black text-xl rounded-full shadow-[0_0_20px_rgba(34,197,94,0.5)] hover:scale-110 transition-all flex items-center justify-center gap-2">
+                                            YES! <Icon name="cat" size={24} fill="white" />
+                                        </button>
+                                        <div className="flex-1 h-full relative">
+                                        <button
+                                            onMouseEnter={handleNoHover}
+                                            onClick={handleNoHover}
+                                            style={isNoButtonMoving ? { position: 'fixed', width: '180px', height: '64px',left: noButtonPos.x, top: noButtonPos.y, zIndex: 1000, transition: 'all 0.1s ease-out' } : {width: '100%',  height: '100%'}}
+                                            className="flex-1 px-4 py-4 bg-red-600 text-white font-bold text-xl rounded-full shadow-[0_0_20px_rgba(220,38,38,0.6)] border border-red-400"
+                                        >
+                                            No
+                                        </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {stage === 'compliments' && (
+                        <div className="glass-panel max-w-md w-full p-8 rounded-3xl text-center space-y-6 animate-in slide-in-from-bottom-10 relative z-10">
+                            <ProgressBar percent={45} />
+                            <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+                                 <Icon name="sparkles" className="mx-auto text-yellow-400 mb-2" size={40} />
+                                 <h2 className="text-2xl font-bold text-white">Level 1: Stardust Vibes</h2>
+                            </div>
+                            <div className="min-h-[100px] flex items-center justify-center">
+                                <p className="text-2xl font-serif italic text-purple-200 animate-in fade-in">
+                                    {compliment || "Click below to reveal a cosmic truth..."}
+                                </p>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => setCompliment(compliments[Math.floor(Math.random() * compliments.length)])} className="w-full py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-2xl font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg">
+                                    <Icon name="wand-2" size={20} /> Generate Magic
+                                </button>
+                                {compliment && (
+                                    <button onClick={() => setStage('quiz')} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-500 transition-all border border-indigo-400">
+                                        That's out of this world! Next!
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {stage === 'quiz' && (
+                        <div className="glass-panel max-w-md w-full p-8 rounded-3xl text-center space-y-6 animate-in slide-in-from-right-10 relative z-10">
+                            <ProgressBar percent={60} />
+                            <h2 className="text-2xl font-bold text-white">Level 2: The Constellation Quiz</h2>
+                            <div className="bg-white/5 p-6 rounded-2xl border border-purple-500/30">
+                                <p className="text-lg font-medium text-indigo-100">{quizQuestions[currentQuizIndex].q}</p>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3">
+                                {quizQuestions[currentQuizIndex].a.map((option, idx) => (
+                                    <button key={idx} onClick={() => handleQuizAnswer(idx)} className="py-3 px-4 bg-slate-800/50 hover:bg-purple-900/50 border border-slate-600 hover:border-purple-400 text-indigo-100 font-semibold rounded-xl transition-all text-left flex items-center gap-3 group">
+                                        <span className="w-8 h-8 rounded-full bg-slate-700 group-hover:bg-purple-600 flex items-center justify-center text-white text-sm transition-colors">{idx + 1}</span>
+                                        {option}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {stage === 'challenge' && (
+                        <div className="glass-panel max-w-md w-full p-8 rounded-3xl text-center space-y-6 animate-in zoom-in relative z-10">
+                            <ProgressBar percent={75 + (clicks * 2)} />
+                            <div className="space-y-2">
+                                <h2 className="text-2xl font-bold text-white animate-pulse">Level 3: Charge the Love Battery!</h2>
+                                <p className="text-indigo-200 text-sm">Rapidly click the heart to reach 100%!</p>
+                            </div>
+                            <div className="relative h-40 flex items-center justify-center">
+                                <button onClick={handleHeartClick} className="active:scale-95 transition-transform">
+                                    <Icon name="heart" size={100 + (clicks * 5)} className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" fill={clicks % 2 === 0 ? "#ef4444" : "#f87171"} />
+                                </button>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-black text-white pointer-events-none">
+                                    {Math.min(100, Math.floor((clicks / clickTarget) * 100))}%
+                                </div>
+                            </div>
+                            <p className="text-xs uppercase tracking-widest text-purple-300">Click Fast!</p>
+                        </div>
+                    )}
+
+                    {stage === 'quiz-result' && (
+                        <div className="glass-panel max-w-md w-full p-10 rounded-3xl text-center space-y-6 relative z-10">
+                            <div className="text-6xl mb-4 animate-bounce">🐱</div>
+                            <h2 className="text-3xl font-bold text-white">Quest Complete!</h2>
+                            <p className="text-xl text-indigo-100">Score: {quizScore}/{quizQuestions.length} <br/> Status: <span className="text-purple-300 font-bold">Soulmate</span></p>
+                            <button
+                                onClick={() => { setIsNoButtonMoving(false); setStage('final-questions'); }}
+                                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(219,39,119,0.5)]"
+                            >
+                                ENTER FINAL STAGE 💖
+                            </button>
+                        </div>
+                    )}
+
+                    {stage === 'celebration' && (
+                        <div className="text-center space-y-8 animate-in zoom-in duration-500 relative z-10">
+                            <div className="fixed inset-0 pointer-events-none z-0">
+                                {[...Array(50)].map((_, i) => (
+                                    <div key={`confetti-${i}`} className="absolute animate-bounce" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s`, color: i % 2 === 0 ? '#d8b4fe' : '#f0abfc' }}>
+                                        <Icon name={i % 3 === 0 ? "cat" : "star"} fill="currentColor" size={Math.random() * 30 + 10} />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="glass-panel p-12 rounded-[3rem] relative z-10 max-w-lg border-2 border-purple-500/50 shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+                                <div className="text-purple-400 mb-6 flex justify-center gap-4">
+                                    <Icon name="cat" size={60} fill="rgba(168,85,247,0.2)" />
+                                    <Icon name="heart" size={60} fill="#ec4899" className="animate-pulse" />
+                                    <Icon name="cat" size={60} fill="rgba(168,85,247,0.2)" className="scale-x-[-1]" />
+                                </div>
+                                <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4 leading-tight uppercase">You're the Meow-est!</h1>
+                                <p className="text-2xl text-indigo-100">Quest Completed. Reward: A lifetime of love & treats.</p>
+                                <div className="mt-8 p-4 bg-white/5 rounded-2xl flex items-center justify-center gap-4 border border-white/10">
+                                     <div className="animate-tada"><Icon name="fish" className="text-pink-400" size={32} /></div>
+                                     <span className="text-purple-200 font-bold text-lg">Unlocked: Unlimited Head Scratches</span>
+                                </div>
+                                <button onClick={resetQuest} className="mt-10 text-slate-400 hover:text-white flex items-center gap-2 mx-auto transition-colors">
+                                    <Icon name="rotate-ccw" size={20} /> Replay Tale
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
