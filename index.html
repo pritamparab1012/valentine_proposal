@@ -98,28 +98,30 @@
 
             const introQuestions = [
                 {
-                    title: "Hey beautiful...",
-                    question: "I've been thinking about us a lot lately. Can I ask you a few things? (P.S. There are hidden cats!)",
+                    title: "Helluu Munchkinnn...",
+                    question: "I've been thinking about us a lot lately... muhehehe. Can I borrow a moment of your time to ask you a few things? (P.S. To keep those eyes from wandering, I've hidden some cosmic kittens throughout this journey for you to find!)",
                     yesText: "Meow! (Yes)",
                     noText: "I'm busy"
                 },
                 {
-                    title: "Cosmic Memories",
-                    question: "Do you remember the first time we realized we were special together?",
-                    yesText: "Yes, I do 💜",
-                    noText: "Not really"
+                    title: "The Fine Print 📜",
+                    question: "By clicking 'Accept,' you agree to a lifetime of random forehead kisses, me being slightly annoying when I'm hungry, and shared custody of all the space-cats. Do you accept these terms?",
+                    yesText: "I accept! 💜",
+                    noText: "I need a lawyer"
                 }
             ];
 
             const compliments = [
-                "Your smile outshines the stars! ✨",
-                "You are the smartest person in the galaxy. 🧠",
-                "Every day with you is a cosmic adventure. 🌎",
-                "You have the kindest heart in the universe. 💜",
-                "I'm obsessed with your laugh! 🎵",
-                "You make everything better just by being there. 🌟",
-                "You're the cat's pajamas! 🐱",
-                "I'm not kitten when I say you're amazing! 🐾"
+                "3 years since that Hinge match and I still can't believe my luck. You’re the best thing I ever found on the internet, even better than those cat memes we love! 📱💜",
+                "You’re more mysterious and captivating than an Agatha Christie plot twist. 🔍",
+                "Coco and Coffee think you’re a 10/10 cat-mom, and honestly, so do I! 🐾",
+                "Whether it's the beaches of Goa or the streets of France, home is just wherever you are. 🏖️",
+                "You’re the 'Noice' to my 'Toit' the Amy Santiago to my Jake Peralta! 🚓",
+                "Our relationship is the only thing with a higher ESG rating than your SASI projects. High impact, zero emissions! 🌍💚",
+                "I love you more than you love a spicy plate of Chaat (and that's a lot!). 🌶️",
+                "You’re like the perfect Italian meal. Comforting, warm, and absolutely 'Chefs Kiss'. 🍝",
+                "Even from across the galaxy (or just from Paris), your light reaches me first. ✨",
+                "I’m 'not kittening' when I say I want to explore every corner of the world with you. 🌎"
             ];
 
             const quizQuestions = [
@@ -129,9 +131,9 @@
                     correct: 2
                 },
                 {
-                    q: "If we were space cats, what would we be doing?",
-                    a: ["Napping on the moon", "Chasing comets", "Cuddling in zero-g", "Eating star-tuna"],
-                    correct: 2
+                    q: "If we were cats like coco and coffee, what would we be doing?",
+                    a: ["Napping on the cuppoard", "Chasing flies", "Cuddling in the cat house", "Eating tuna"],
+                    correct: 3
                 },
                 {
                     q: "Do you like my silly jokes?",
@@ -140,12 +142,12 @@
                 },
                 {
                     q: "Who is the cuter one in our relationship?",
-                    a: ["You are!", "Me (obviously)", "The Cat", "It's a tie"],
+                    a: ["You are!", "Me (obviously)", "Our Cats", "It's a tie with cats and you"],
                     correct: 1
                 },
                 {
                     q: "What is my favorite activity to do with you?",
-                    a: ["Watching movies", "Just talking", "Traveling", "Spending time together"],
+                    a: ["Talking non stop", "Traveling", "Spending time together", "Everything!"],
                     correct: 3
                 },
                 {
@@ -155,7 +157,12 @@
                 },
                 {
                     q: "How much do I love you?",
-                    a: ["To the moon and back", "More than pizza", "Infinity x Infinity", "Yes"],
+                    a: [
+                        "More than Coco loves his food🍗", 
+                        "More than Coffee's love for dhoop☀️", 
+                        "More than your love for dahi chaat🥟", 
+                        "More than my love for Vada Pav🍔"
+                    ],
                     correct: 3
                 }
             ];
@@ -364,7 +371,7 @@
                                             style={isNoButtonMoving ? { position: 'fixed', width: '180px', height: '64px',left: noButtonPos.x, top: noButtonPos.y, zIndex: 1000, transition: 'all 0.1s ease-out' } : {width: '100%',  height: '100%'}}
                                             className="flex-1 px-4 py-4 bg-red-600 text-white font-bold text-xl rounded-full shadow-[0_0_20px_rgba(220,38,38,0.6)] border border-red-400"
                                         >
-                                            No
+                                            No <Icon name="frown" size={24} fill="white" />
                                         </button>
                                         </div>
                                     </div>
